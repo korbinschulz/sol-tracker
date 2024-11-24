@@ -23,6 +23,9 @@ SolTracker is a Python CLI tool that allows you to monitor Solana wallet transac
 ___
 **CLI Commands**
 
+<img width="446" alt="Screenshot 2024-11-24 at 3 39 16 PM" src="https://github.com/user-attachments/assets/60a4221b-a167-4e05-a48b-f1f9f0854afb">
+<img width="490" alt="Screenshot 2024-11-24 at 3 39 27 PM" src="https://github.com/user-attachments/assets/42ff7532-6538-41ba-ba15-7915ae6f6a62">
+
 **Main Menu:**
 
 * Start the CLI interface: `python main.py`
@@ -86,3 +89,6 @@ SolTracker sends notifications in the following format:
     * Token Amount: Amount of tokens transferred.
     * Sol Amount: Amount of SOL transferred (converted from lamports).
     * Transaction: Link to view the transaction on Solscan.
+ 
+<img width="400" height="400" alt="Screenshot 2024-11-24 at 3 38 29 PM" src="https://github.com/user-attachments/assets/074d4015-b950-4ccf-9e04-dad665a4e738">
+
