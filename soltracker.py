@@ -12,6 +12,7 @@ from datetime import datetime
 import datetime
 import threading
 import time
+from task_executor import run_tasks_concurrently
 
 WALLETS_FILE = 'wallets.json'
 INFO_FILE = 'info.json'
@@ -49,8 +50,7 @@ def menu():
         answers = inquirer.prompt(questions)
 
         if answers['choice'].startswith('1'):
-            pass
-            #start_tracking()
+            start_tracking()
         elif answers['choice'].startswith('2'):
             manage_wallets()
         elif answers['choice'].startswith('3'):
@@ -162,6 +162,28 @@ def manage_info():
             set_telegram_webhook(info)
         elif answers['info_choice'].startswith('4'):
             break
+
+def start_tracking():
+    wallets = load_data(WALLETS_FILE, [])
+    info = load_data(INFO_FILE, {})
+    
+    if not wallets:
+        click.echo("No wallets found. Please add a wallet first.")
+        return
+    if not info.get('helius_api_key'):
+        click.echo("Helius API Key not set. Please set it first.")
+        return
+    #if no discord webhook or telegram webhook, ask user to set either one
+    if not info.get('discord_webhook') and not info.get('telegram_webhook'):
+        click.echo("No Discord or Telegram webhook set. Please set either one.")
+        return
+    
+    try:
+        run_tasks_concurrently(wallets, info['helius_api_key'], info.get('discord_webhook'), info.get('telegram_webhook'))
+    except Exception as e:
+        click.echo(f"Error starting tracking: {e}")
+    
+    input("Press Enter to continue...")
 
         
 
