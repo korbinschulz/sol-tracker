@@ -1,10 +1,8 @@
-import random
 import time
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import capsolver
-from urllib.parse import quote
 import click
+import time
 
 #global set for tracking last processed slot for the wallets being tracked
 last_processed_slots = {}
@@ -159,9 +157,6 @@ def process_transactions(wallet, transactions, discord_webhook, telegram_webhook
                     send_discord_notification(discord_webhook, wallet['name'], "SOLD", token_mint, amount, sol_amount, transaction['signature'])
 
     return latest_slot  # Return the highest slot processed
-
-
-import time
 
 def run_tasks_concurrently(wallets, helius_api_key, discord_webhook, telegram_webhook):
     """Run monitoring tasks concurrently for all wallets with a small delay between task starts."""

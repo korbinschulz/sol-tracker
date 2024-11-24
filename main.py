@@ -1,9 +1,4 @@
-import requests
-import subprocess
-import platform
 import click
-import json
-import os
 
 def main_logic():
     import soltracker
