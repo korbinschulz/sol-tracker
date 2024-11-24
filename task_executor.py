@@ -76,7 +76,7 @@ def execute_monitoring(wallet, helius_key, discord_webhook, telegram_webhook):
         params = {
             "api-key": helius_key,
             "types": ["TRANSFER", "SWAP"],
-            "limit": 10,
+            "limit": 5,
         }
 
         try:
@@ -121,9 +121,8 @@ def process_transactions(wallet, transactions, discord_webhook, telegram_webhook
                 (abs(account["nativeBalanceChange"]) / 1e9 for account in transaction["accountData"] if account["account"] == wallet_address),
                 0.0
             ),
-            2  # Round to 2 decimal places
+            4  # Round to 2 decimal places
         )
-
 
         # Process SWAP transactions
         if transaction["type"] == "SWAP":
@@ -162,16 +161,23 @@ def process_transactions(wallet, transactions, discord_webhook, telegram_webhook
     return latest_slot  # Return the highest slot processed
 
 
-def run_tasks_concurrently(wallets, helius_key, discord_webhook, telegram_webhook):
-    """Run monitoring tasks concurrently for all wallets."""
+import time
 
-    with ThreadPoolExecutor(max_workers=len(wallets)) as executor:
+def run_tasks_concurrently(wallets, helius_api_key, discord_webhook, telegram_webhook):
+    """Run monitoring tasks concurrently for all wallets with a small delay between task starts."""
+
+    def execute_with_delay(wallet):
+        """Wrapper to introduce a delay between tasks."""
+        time.sleep(2)  # Add a 2-second delay before starting each task
+        execute_monitoring(wallet, helius_api_key, discord_webhook, telegram_webhook)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
         futures = [
-            executor.submit(execute_monitoring, wallet, helius_key, discord_webhook, telegram_webhook)
-            for wallet in wallets
+            executor.submit(execute_with_delay, wallet) for wallet in wallets
         ]
         for future in as_completed(futures):
             try:
                 future.result()
             except Exception as e:
                 click.echo(f"An error occurred: {e}")
+
