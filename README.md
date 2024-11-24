@@ -1,6 +1,6 @@
-# SolTracker
+# SolTracker ( Solana Wallet Tracker ) 
 
-SolTracker is a Python CLI tool that allows you to monitor Solana wallet transactions in real-time. It provides notifications for token swaps and transfers through Discord and Telegram webhooks, making it easy to track activity on multiple wallets.
+SolTracker - Solana Wallet Tracker is a Python CLI tool that allows you to monitor Solana wallet transactions in real-time. It provides notifications for token swaps and transfers through Discord and Telegram webhooks, making it easy to track activity on multiple wallets.
 
 ---
 
