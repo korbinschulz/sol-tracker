@@ -7,7 +7,7 @@ import time
 #global set for tracking last processed slot for the wallets being tracked
 last_processed_slots = {}
 
-def send_discord_notification(webhook_url, wallet_name, action, token_mint, token_amount, sol_amount, transaction_signature):
+def send_discord_notification(webhook_url, wallet_name, action, token_mint, token_amount, sol_amount, transaction_signature, coin_cap, coin_name, coin_ticker):
     """Send a Discord notification with a formatted embed."""
     try:
         embed_color = 65280 if action == "BOUGHT" else 16711680  # Green for BOUGHT, Red for SOLD
@@ -18,9 +18,19 @@ def send_discord_notification(webhook_url, wallet_name, action, token_mint, toke
                     "color": embed_color,
                     "fields": [
                         {
+                            "name": "**Token**",
+                            "value": f'${coin_ticker} - {coin_name}',
+                            "inline": True
+                        },
+                        {
+                            "name": "**Market Cap**",
+                            "value": f'${coin_cap}',
+                            "inline": False
+                        },
+                        {
                             "name": "**Token Mint**",
                             "value": token_mint,
-                            "inline": True
+                            "inline": False
                         },
                         {
                             "name": "**Token Amount**",
@@ -122,6 +132,10 @@ def process_transactions(wallet, transactions, discord_webhook, telegram_webhook
             4  # Round to 2 decimal places
         )
 
+        coin_cap = 0
+        coin_name = ""
+        coin_ticker = ""
+
         # Process SWAP transactions
         if transaction["type"] == "SWAP":
             token_transfers = transaction.get("tokenTransfers", [])
@@ -146,15 +160,37 @@ def process_transactions(wallet, transactions, discord_webhook, telegram_webhook
                     # Buying a token
                     token_mint = token_transfer["mint"]
                     amount = token_transfer["tokenAmount"]
+                    pump_link = f"https://frontend-api.pump.fun/coins/{token_mint}"
 
-                    send_discord_notification(discord_webhook, wallet['name'], "BOUGHT", token_mint, amount, sol_amount, transaction['signature'])
+                    pump_response = requests.get(pump_link)
+                    pump_response.raise_for_status()
+                    pump_data = pump_response.json()
+
+                    if isinstance(pump_data, dict):
+                        coin_cap = pump_data.get('usd_market_cap', 0)
+                        coin_name = pump_data.get('name', 'Unknown')
+                        coin_ticker = pump_data.get('symbol', 'N/A')
+
+                    coin_cap = round(coin_cap, 2)
+                    send_discord_notification(discord_webhook, wallet['name'], "BOUGHT", token_mint, amount, sol_amount, transaction['signature'], coin_cap, coin_name, coin_ticker)
 
                 elif token_transfer["fromUserAccount"] == wallet_address:
                     # Selling a token
                     token_mint = token_transfer["mint"]
                     amount = token_transfer["tokenAmount"]
+                    pump_link = f"https://frontend-api.pump.fun/coins/{token_mint}"
 
-                    send_discord_notification(discord_webhook, wallet['name'], "SOLD", token_mint, amount, sol_amount, transaction['signature'])
+                    pump_response = requests.get(pump_link)
+                    pump_response.raise_for_status()
+                    pump_data = pump_response.json()
+
+                    if isinstance(pump_data, dict):
+                        coin_cap = pump_data.get('usd_market_cap', 0)
+                        coin_name = pump_data.get('name', 'Unknown')
+                        coin_ticker = pump_data.get('symbol', 'N/A')
+
+                    coin_cap = round(coin_cap, 2)
+                    send_discord_notification(discord_webhook, wallet['name'], "SOLD", token_mint, amount, sol_amount, transaction['signature'], coin_cap, coin_name, coin_ticker)
 
     return latest_slot  # Return the highest slot processed
 
